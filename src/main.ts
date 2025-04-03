@@ -80,9 +80,10 @@ async function analyzeCode(
 
 function createPrompt(file: File, chunk: Chunk, prDetails: PRDetails): string {
   return `Your task is to review pull requests. Instructions:
-- Provide the response in following JSON format:  {"reviews": [{"lineNumber":  <line_number>, "reviewComment": "<review comment>"}]}
-- Do not give positive comments or compliments.
-- Provide comments and suggestions ONLY if there is something to improve, otherwise "reviews" should be an empty array.
+- Respond with a valid JSON object, with no additional formatting.
+- The JSON format must be: {"reviews": [{"lineNumber": <line_number>, "reviewComment": "<review comment>"}]}
+- Do not wrap the response in markdown code blocks (e.g., \`\`\`json ... \`\`\`).
+- Do not add explanations, only return raw JSON.
 - Write the comment in GitHub Markdown format.
 - Use the given description only for the overall context and only comment the code.
 - IMPORTANT: NEVER suggest adding comments to the code.
@@ -124,6 +125,8 @@ async function getAIResponse(prompt: string): Promise<Array<{
   };
 
   try {
+
+    core.error("await openai.chat.completions");
     const response = await openai.chat.completions.create({
       ...queryConfig,
       // return JSON if the model supports it:
@@ -137,11 +140,16 @@ async function getAIResponse(prompt: string): Promise<Array<{
         },
       ],
     });
-
     const res = response.choices[0].message?.content?.trim() || "{}";
+
+
+    throw new Error("" + res);
+
+    core.error("Raw OpenAI Response:", res);
+
     return JSON.parse(res).reviews;
   } catch (error) {
-    console.error("Error:", error);
+    core.error("AI Review Error:", error);
     return null;
   }
 }
