@@ -1,3 +1,8 @@
+# Fork of `AI Code Reviewer`
+
+This `stable` branch builds the original `main` branch plus some curated MRs from the original repo. 
+---
+
 # AI Code Reviewer
 
 AI Code Reviewer is a GitHub Action that leverages OpenAI's GPT-4 API to provide intelligent feedback and suggestions on
